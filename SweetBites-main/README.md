@@ -17,3 +17,12 @@ It features a modern **Purple & Gold** theme, **light/dark mode**, **mobile resp
 ├── script.js        # Theme toggle + form validation
 └── README.md        # Project documentation
 
+
+---
+
+## 🧾 Changelog
+
+See the full history in `CHANGELOG.md`.
+
+- Latest release: v1.0.0 — https://github.com/Larpie3/sweetbites/releases/tag/v1.0.0
+
