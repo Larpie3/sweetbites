@@ -1,0 +1,5 @@
+node_modules/
+sweetbites.db
+.env
+.DS_Store
+*.log

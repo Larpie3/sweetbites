@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SweetBites — Shopping Cart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .cart-container { max-width: 1000px; margin: 20px auto; }
+    .cart-items { margin: 20px 0; }
+    .cart-item { display: flex; gap: 15px; padding: 15px; background: var(--card-bg); border-radius: var(--radius); margin-bottom: 10px; align-items: center; }
+    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 600; margin-bottom: 5px; }
+    .cart-item-price { color: var(--accent); }
+    .quantity-control { display: flex; gap: 8px; align-items: center; }
+    .quantity-control button { padding: 4px 8px; cursor: pointer; border: 1px solid var(--muted); background: transparent; border-radius: 4px; }
+    .cart-summary { background: var(--soft); padding: 20px; border-radius: var(--radius); margin: 20px 0; }
+    .summary-row { display: flex; justify-content: space-between; margin: 8px 0; }
+    .summary-row.total { font-size: 1.2rem; font-weight: 700; color: var(--brown); }
+    .checkout-btn { width: 100%; padding: 15px; background: linear-gradient(90deg, var(--brown), var(--accent)); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 20px; }
+    .checkout-btn:hover { opacity: 0.9; }
+    .empty-message { text-align: center; padding: 40px; color: var(--muted); }
+    .btn-remove { padding: 6px 10px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><a href="index.html" style="text-decoration:none;">SweetBites</a></div>
+    <nav class="nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="menu.html" class="nav-link">Menu</a>
+      <a href="about.html" class="nav-link">About</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn-cta" id="theme-toggle" aria-label="Toggle theme">Dark</button>
+      <a href="cart.html" class="btn-cta">🛒 Cart (<span id="cart-count">0</span>)</a>
+    </div>
+  </header>
+
+  <main class="container cart-container fade-up">
+    <h1 class="section-title">Shopping Cart</h1>
+    
+    <div id="cart-items" class="cart-items">
+      <div class="empty-message">Your cart is empty</div>
+    </div>
+
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <span id="subtotal">₱0</span>
+      </div>
+      <div class="summary-row">
+        <span>Delivery Fee:</span>
+        <span id="delivery-fee">₱50</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total:</span>
+        <span id="total">₱0</span>
+      </div>
+    </div>
+
+    <button class="checkout-btn" id="checkout-btn">Proceed to Checkout</button>
+    <a href="menu.html" class="btn outline" style="display: block; text-align: center; margin-top: 10px;">Continue Shopping</a>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 SweetBites Bakery</p>
+    </div>
+  </footer>
+
+  <script defer src="script.js"></script>
+  <script>
+    const DELIVERY_FEE = 50;
+
+    function loadCart() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartItems = document.getElementById('cart-items');
+      
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<div class="empty-message">Your cart is empty</div>';
+        updateCartSummary(cart);
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">₱${item.price}</div>
+          </div>
+          <div class="quantity-control">
+            <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})">−</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+          </div>
+          <div style="text-align: right;">
+            <div>₱${(item.price * item.quantity).toFixed(2)}</div>
+            <button class="btn-remove" onclick="removeFromCart('${item.id}')">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      updateCartSummary(cart);
+    }
+
+    function updateCartSummary(cart) {
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const total = subtotal + DELIVERY_FEE;
+      
+      document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+      document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+      document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function updateQuantity(productId, newQuantity) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const item = cart.find(i => i.id === productId);
+      
+      if (item) {
+        item.quantity = Math.max(1, newQuantity);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
+      }
+    }
+
+    function removeFromCart(productId) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart = cart.filter(item => item.id !== productId);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      loadCart();
+    }
+
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert('Your cart is empty');
+        return;
+      }
+      localStorage.setItem('checkout-items', JSON.stringify(cart));
+      window.location.href = 'contact.html#order';
+    });
+
+    loadCart();
+  </script>
+</body>
+</html>
